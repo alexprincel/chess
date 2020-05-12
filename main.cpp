@@ -6,11 +6,16 @@ struct Point {
     Point() { }
     Point(unsigned int px, unsigned int py) : x(px), y(py) { }
 
+    bool operator==(Point p) {
+        return ((x == p.x) && (y == p.y));
+    }
+
     unsigned int x, y;
 };
 
 class Exception { };
 class ChessIllegalMove : Exception { };
+class ChessOutOfBounds : ChessIllegalMove { };
 
 
 enum PieceType { FREE = 0, PAWN = 1, ROOK = 2, BISHOP = 3, KNIGHT = 4, QUEEN = 5, KING = 6, INVALID = 7 };
@@ -22,7 +27,7 @@ public:
     Piece(const PieceType& pt, const PieceSide& ps) : type(pt), side(ps) { }
     Piece(const Piece& p) : type(p.type), side(p.side) { }
 
-    bool IsInvalid() const { return type == PieceType::INVALID; }
+    bool IsInvalid() const { return type == PieceType::INVALID; }
 
     static char GetPieceDisplay(Piece& p) {
         char piece_display = 0;
@@ -78,13 +83,12 @@ class Board {
             }
         }
 
-        void MakeMove(Point& source, Point& destination) {
+        void MakeMove(Point source, Point destination) {
             Piece source_piece = grid[source.x][source.y];
             Piece destination_piece = grid[destination.x][destination.y];
 
-            if(source_piece.IsInvalid() || destination_piece.IsInvalid() || source_piece.side == destination_piece.side)
-                throw ChessIllegalMove();
-
+            if(source_piece.IsInvalid() || destination_piece.IsInvalid())               throw ChessOutOfBounds();
+            if(source_piece.side == destination_piece.side || source == destination)    throw ChessIllegalMove();
             
         }
 
@@ -120,5 +124,7 @@ class Board {
 int main(int argc, char** argv) {
     Board chess_board;
     std::cout << chess_board;
+
+    chess_board.MakeMove(Point(3, 3), Point(3, 5));
     return 0;
 }
